@@ -2,46 +2,112 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>9 Eyes FPS</title>
+<title>ORLEN</title>
 <style>
-body { margin:0; overflow:hidden; font-family:Arial; }
+body { margin:0; overflow:hidden; font-family:Arial; background:black; }
+
+/* MENU */
 #menu {
+position:absolute;
+width:100%;
+height:100%;
+background:linear-gradient(to bottom, #000000, #1a0000);
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+color:white;
+z-index:10;
+}
+
+#title {
+font-size:80px;
+letter-spacing:10px;
+text-shadow:0 0 20px red;
+margin-bottom:40px;
+}
+
+#playBtn {
+padding:20px 50px;
+font-size:22px;
+cursor:pointer;
+background:red;
+border:none;
+color:white;
+}
+
+#creditsBtn {
+position:absolute;
+right:40px;
+bottom:40px;
+padding:10px 20px;
+cursor:pointer;
+background:#222;
+color:white;
+border:1px solid red;
+}
+
+#creditsScreen {
 position:absolute;
 width:100%;
 height:100%;
 background:black;
 color:white;
-display:flex;
+display:none;
 justify-content:center;
 align-items:center;
 flex-direction:column;
-z-index:10;
+z-index:15;
 }
+
+/* HUD */
 #hud {
 position:absolute;
 top:20px;
 left:20px;
 color:white;
 z-index:5;
+display:none;
 text-shadow:0 0 5px black;
+font-size:18px;
 }
-button {
-padding:15px 30px;
-font-size:20px;
-cursor:pointer;
+
+#death {
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+color:white;
+display:none;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+z-index:20;
 }
 </style>
 </head>
 <body>
 
 <div id="menu">
-<h1>9 EYES FPS</h1>
-<button onclick="startGame()">JOUER</button>
+<div id="title">ORLEN version alpha 0.2</div>
+<button id="playBtn" onclick="startGame()">JOUER</button>
+<button id="creditsBtn" onclick="showCredits()">CRÉDITS</button>
 </div>
 
-<div id="hud" style="display:none;">
+<div id="creditsScreen">
+<h1>CRÉDITS</h1>
+<p>Yotvin</p>
+<button onclick="hideCredits()">Retour</button>
+</div>
+
+<div id="hud">
 ❤️ Vie: <span id="hp">100</span><br>
-🔫 Balles: <span id="ammo">30</span>
+🔫 Chargeur: <span id="mag">30</span> | Réserve: <span id="reserve">90</span>
+</div>
+
+<div id="death">
+<h1>💀 VOUS ÊTES MORT</h1>
+<button onclick="location.reload()">Rejouer</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
@@ -50,15 +116,23 @@ cursor:pointer;
 let scene, camera, renderer;
 let enemies = [];
 let health = 100;
-let ammo = 30;
-let controlsEnabled = false;
+let magazine = 30;
+let reserveAmmo = 90;
+let enemyHP = 5; // nombre de balles pour tuer
+let isDead = false;
 
 let moveForward=false, moveBackward=false, moveLeft=false, moveRight=false;
-let velocity = new THREE.Vector3();
-let direction = new THREE.Vector3();
+let yaw=0, pitch=0;
 
-let pitch = 0;
-let yaw = 0;
+const playerHeight = 2;
+
+function showCredits(){
+document.getElementById("creditsScreen").style.display="flex";
+}
+
+function hideCredits(){
+document.getElementById("creditsScreen").style.display="none";
+}
 
 function startGame(){
 document.getElementById("menu").style.display="none";
@@ -68,39 +142,39 @@ animate();
 }
 
 function init(){
-
 scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB);
+scene.background = new THREE.Color(0x222222);
 
 camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-camera.position.y = 2;
+camera.position.y = playerHeight;
 
 renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+let light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(10,20,10);
 scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
 
+// sol
 const floor = new THREE.Mesh(
 new THREE.PlaneGeometry(1000,1000),
-new THREE.MeshStandardMaterial({color:0x228B22})
+new THREE.MeshStandardMaterial({color:0x111111})
 );
 floor.rotation.x = -Math.PI/2;
 scene.add(floor);
 
 // arme
 const gun = new THREE.Mesh(
-new THREE.BoxGeometry(0.5,0.3,1),
-new THREE.MeshStandardMaterial({color:0x333333})
+new THREE.BoxGeometry(0.6,0.3,1),
+new THREE.MeshStandardMaterial({color:0x000000})
 );
-gun.position.set(0.6,-0.5,-1);
+gun.position.set(0.6,-0.6,-1);
 camera.add(gun);
 scene.add(camera);
 
-// ennemis
+// spawn ennemis
 for(let i=0;i<5;i++) spawnEnemy();
 
 // souris
@@ -124,10 +198,7 @@ if(e.key=="s") moveBackward=true;
 if(e.key=="q") moveLeft=true;
 if(e.key=="d") moveRight=true;
 
-if(e.key=="r"){
-ammo = 30;
-document.getElementById("ammo").innerText=ammo;
-}
+if(e.key=="r") reload();
 });
 
 document.addEventListener("keyup", (e)=>{
@@ -137,38 +208,38 @@ if(e.key=="q") moveLeft=false;
 if(e.key=="d") moveRight=false;
 });
 
-// tir
 document.addEventListener("mousedown", shoot);
 }
 
 function spawnEnemy(){
 let group = new THREE.Group();
+group.userData.hp = enemyHP;
 
 let body = new THREE.Mesh(
-new THREE.BoxGeometry(2,4,1),
-new THREE.MeshStandardMaterial({color:0x111111})
+new THREE.BoxGeometry(3,6,2),
+new THREE.MeshStandardMaterial({color:0x000000})
 );
 group.add(body);
 
-// 9 yeux
 for(let i=0;i<9;i++){
 let eye = new THREE.Mesh(
-new THREE.SphereGeometry(0.2),
+new THREE.SphereGeometry(0.3),
 new THREE.MeshStandardMaterial({color:0xff0000, emissive:0xff0000})
 );
-eye.position.set((i%3)-1, Math.floor(i/3)-1, 0.6);
+eye.position.set((i%3)-1, Math.floor(i/3)-1, 1.2);
 group.add(eye);
 }
 
-group.position.set(Math.random()*200-100,2,Math.random()*200-100);
+group.position.set(Math.random()*200-100,3,Math.random()*200-100);
 scene.add(group);
 enemies.push(group);
 }
 
 function shoot(){
-if(ammo<=0) return;
-ammo--;
-document.getElementById("ammo").innerText=ammo;
+if(magazine<=0 || isDead) return;
+
+magazine--;
+updateAmmoUI();
 
 let raycaster = new THREE.Raycaster();
 raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
@@ -176,34 +247,59 @@ let intersects = raycaster.intersectObjects(enemies,true);
 
 if(intersects.length>0){
 let enemy = intersects[0].object.parent;
+enemy.userData.hp--;
+
+enemy.children[0].material.color.set(0x550000); // flash rouge
+
+setTimeout(()=>{
+enemy.children[0].material.color.set(0x000000);
+},100);
+
+if(enemy.userData.hp <= 0){
 scene.remove(enemy);
 enemies.splice(enemies.indexOf(enemy),1);
 spawnEnemy();
 }
 }
+}
+
+function reload(){
+if(reserveAmmo<=0) return;
+let needed = 30 - magazine;
+let used = Math.min(needed, reserveAmmo);
+magazine += used;
+reserveAmmo -= used;
+updateAmmoUI();
+}
+
+function updateAmmoUI(){
+document.getElementById("mag").innerText=magazine;
+document.getElementById("reserve").innerText=reserveAmmo;
+}
 
 function animate(){
 requestAnimationFrame(animate);
+if(isDead) return;
 
-velocity.x = 0;
-velocity.z = 0;
-
-if(moveForward) velocity.z -= 0.5;
-if(moveBackward) velocity.z += 0.5;
-if(moveLeft) velocity.x -= 0.5;
-if(moveRight) velocity.x += 0.5;
-
-camera.translateX(velocity.x);
-camera.translateZ(velocity.z);
+let speed = 0.5;
+if(moveForward) camera.translateZ(-speed);
+if(moveBackward) camera.translateZ(speed);
+if(moveLeft) camera.translateX(-speed);
+if(moveRight) camera.translateX(speed);
 
 enemies.forEach(enemy=>{
 enemy.lookAt(camera.position);
 enemy.position.x += (camera.position.x - enemy.position.x)*0.002;
 enemy.position.z += (camera.position.z - enemy.position.z)*0.002;
 
-if(enemy.position.distanceTo(camera.position)<2){
+if(enemy.position.distanceTo(camera.position)<3){
 health -= 0.2;
+health = Math.max(0,health);
 document.getElementById("hp").innerText=Math.floor(health);
+if(health<=0){
+isDead=true;
+document.getElementById("death").style.display="flex";
+}
 }
 });
 
