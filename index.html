@@ -14,7 +14,7 @@ font-family:Arial;
 }
 
 canvas{
-display:block;
+display:none;
 margin:auto;
 }
 
@@ -23,6 +23,24 @@ position:absolute;
 top:20px;
 left:20px;
 font-size:22px;
+display:none;
+}
+
+#menu{
+position:absolute;
+width:100vw;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+background:linear-gradient(#87CEEB,#dff4ff);
+}
+
+button{
+font-size:20px;
+padding:15px 30px;
+cursor:pointer;
 }
 
 .glitch{
@@ -67,6 +85,11 @@ font-size:14px;
 
 <body>
 
+<div id="menu">
+<h1>Runner Corrompu</h1>
+<button onclick="startGame()">Jouer</button>
+</div>
+
 <div id="ui">Score : <span id="score">0</span></div>
 
 <canvas id="game" width="900" height="400"></canvas>
@@ -79,6 +102,7 @@ const ctx = canvas.getContext("2d")
 let score = 0
 let gameOver = false
 let corruption = false
+let started = false
 
 let player={
 x:100,
@@ -98,6 +122,22 @@ size:40+Math.random()*40
 })
 }
 
+function startGame(){
+
+document.getElementById("menu").style.display="none"
+canvas.style.display="block"
+document.getElementById("ui").style.display="block"
+
+started=true
+
+setTimeout(startCorruption,20000)
+
+funnyMusic()
+
+loop()
+
+}
+
 function spawnEnemy(){
 enemies.push({
 x:900,
@@ -111,7 +151,7 @@ setInterval(spawnEnemy,1600)
 
 document.addEventListener("keydown",e=>{
 
-if(e.code==="Space" && !player.jump){
+if(e.code==="Space" && !player.jump && started){
 
 player.vy=-12
 player.jump=true
@@ -123,7 +163,7 @@ playJump()
 
 function update(){
 
-if(gameOver)return
+if(gameOver || !started)return
 
 score++
 document.getElementById("score").innerText=score
@@ -213,10 +253,7 @@ align-items:center;
 
 <h1 style="font-size:60px;">GAME OVER</h1>
 
-<button onclick="restartGame()" 
-style="font-size:20px;padding:15px 30px;">
-Recommencer
-</button>
+<button onclick="restartGame()">Recommencer</button>
 
 <div style="
 position:absolute;
@@ -237,9 +274,7 @@ function restartGame(){
 location.href = location.href
 }
 
-/* CORRUPTION APRES 1 MINUTE */
-
-setTimeout(startCorruption,60000)
+/* CORRUPTION APRES 20 SECONDES */
 
 function startCorruption(){
 
@@ -248,7 +283,6 @@ corruption=true
 document.body.classList.add("glitch")
 
 setInterval(playGlitchSound,120)
-
 setInterval(spawnWindow,500)
 
 }
@@ -339,15 +373,14 @@ osc.stop(audioCtx.currentTime+0.05)
 
 }
 
-funnyMusic()
-
 function loop(){
+
 update()
 draw()
-requestAnimationFrame(loop)
-}
 
-loop()
+requestAnimationFrame(loop)
+
+}
 
 </script>
 
