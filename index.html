@@ -11,6 +11,7 @@ margin:0;
 overflow:hidden;
 background:linear-gradient(#87CEEB,#dff4ff);
 font-family:Arial;
+transition:background 0.2s;
 }
 
 canvas{
@@ -34,7 +35,6 @@ display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
-background:linear-gradient(#87CEEB,#dff4ff);
 }
 
 button{
@@ -43,36 +43,23 @@ padding:15px 30px;
 cursor:pointer;
 }
 
-.glitch{
-animation:glitch 0.15s infinite;
-}
-
-@keyframes glitch{
-0%{transform:translate(2px,0)}
-50%{transform:translate(-2px,2px)}
-100%{transform:translate(0,-2px)}
-}
-
 .windowNotif{
 position:absolute;
 width:260px;
 background:#f0f0f0;
 border:2px solid #555;
 box-shadow:4px 4px 10px rgba(0,0,0,0.5);
-font-family:Arial;
 }
 
 .windowBar{
 background:#2d89ef;
 color:white;
 padding:5px;
-font-size:14px;
 }
 
 .windowBody{
 padding:10px;
 color:black;
-font-size:14px;
 }
 
 @keyframes scroll{
@@ -104,15 +91,25 @@ let gameOver = false
 let corruption = false
 let started = false
 
-let player={
+let player
+let enemies
+let clouds
+
+function resetGame(){
+
+score=0
+gameOver=false
+corruption=false
+
+player={
 x:100,
 y:300,
 vy:0,
 jump:false
 }
 
-let enemies=[]
-let clouds=[]
+enemies=[]
+clouds=[]
 
 for(let i=0;i<5;i++){
 clouds.push({
@@ -122,29 +119,30 @@ size:40+Math.random()*40
 })
 }
 
+document.getElementById("score").innerText=0
+
+document.querySelectorAll(".windowNotif").forEach(e=>e.remove())
+
+document.body.style.background="linear-gradient(#87CEEB,#dff4ff)"
+
+}
+
+resetGame()
+
 function startGame(){
 
 document.getElementById("menu").style.display="none"
 canvas.style.display="block"
 document.getElementById("ui").style.display="block"
 
+resetGame()
+
 started=true
 
 setTimeout(startCorruption,20000)
 
-funnyMusic()
-
 loop()
 
-}
-
-function spawnEnemy(){
-enemies.push({
-x:900,
-y:320,
-w:30,
-h:40
-})
 }
 
 setInterval(spawnEnemy,1600)
@@ -160,6 +158,19 @@ playJump()
 }
 
 })
+
+function spawnEnemy(){
+
+if(!started)return
+
+enemies.push({
+x:900,
+y:320,
+w:30,
+h:40
+})
+
+}
 
 function update(){
 
@@ -233,18 +244,25 @@ ctx.fill()
 }
 
 function die(){
+
 gameOver=true
-setTimeout(whiteGameOver,1000)
+
+showGameOver()
+
 }
 
-function whiteGameOver(){
+function showGameOver(){
 
-document.body.innerHTML=`
+const div=document.createElement("div")
 
+div.innerHTML=`
 <div style="
 background:white;
 width:100vw;
 height:100vh;
+position:absolute;
+top:0;
+left:0;
 display:flex;
 flex-direction:column;
 justify-content:center;
@@ -265,25 +283,55 @@ MESSAGE SYSTEME
 </div>
 
 </div>
-
 `
+
+document.body.appendChild(div)
 
 }
 
 function restartGame(){
-location.href = location.href
+
+document.querySelectorAll("div").forEach(d=>{
+if(d.innerHTML.includes("GAME OVER")) d.remove()
+})
+
+resetGame()
+
 }
 
-/* CORRUPTION APRES 20 SECONDES */
+/* CORRUPTION */
 
 function startCorruption(){
 
 corruption=true
 
-document.body.classList.add("glitch")
+setInterval(screenShake,50)
+setInterval(colorGlitch,120)
+setInterval(playGlitchSound,100)
+setInterval(spawnWindow,400)
 
-setInterval(playGlitchSound,120)
-setInterval(spawnWindow,500)
+}
+
+/* SHAKE */
+
+function screenShake(){
+
+let x=(Math.random()-0.5)*20
+let y=(Math.random()-0.5)*20
+
+document.body.style.transform=`translate(${x}px,${y}px)`
+
+}
+
+/* COULEURS */
+
+function colorGlitch(){
+
+let r=Math.random()*255
+let g=Math.random()*255
+let b=Math.random()*255
+
+document.body.style.background=`rgb(${r},${g},${b})`
 
 }
 
@@ -331,23 +379,6 @@ audioCtx.currentTime+time
 
 osc.start()
 osc.stop(audioCtx.currentTime+time)
-
-}
-
-function funnyMusic(){
-
-let notes=[262,330,392,523]
-
-setInterval(()=>{
-
-if(!corruption){
-
-let n=notes[Math.floor(Math.random()*notes.length)]
-playTone(n,0.2)
-
-}
-
-},400)
 
 }
 
