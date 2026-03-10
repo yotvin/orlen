@@ -6,7 +6,6 @@
 <title>ORLEN music base</title>
 
 <style>
-
 :root{
 --bg1:#0f2027;
 --bg2:#203a43;
@@ -23,7 +22,7 @@ color:white;
 
 header{
 text-align:center;
-padding:30px;
+padding:28px;
 font-size:34px;
 font-weight:bold;
 letter-spacing:2px;
@@ -36,32 +35,34 @@ margin-bottom:20px;
 }
 
 .studio{
-max-width:1300px;
+max-width:1400px;
 margin:auto;
-padding:30px;
+padding:25px;
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:30px;
+gap:25px;
 }
 
 .panel{
 background:rgba(255,255,255,0.08);
-padding:25px;
+padding:22px;
 border-radius:16px;
 backdrop-filter:blur(10px);
-box-shadow:0 10px 30px rgba(0,0,0,0.3);
+box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
-.panel h2{
-margin-top:0;
-}
+.panel h2{margin-top:0}
 
-/* PIANO */
+/* piano */
+
+.piano-wrapper{
+overflow:hidden;
+transition:height .4s ease;
+}
 
 .piano{
 display:flex;
-height:200px;
-margin-top:15px;
+height:180px;
 user-select:none;
 }
 
@@ -69,81 +70,80 @@ user-select:none;
 flex:1;
 background:white;
 border:1px solid #111;
-cursor:pointer;
 position:relative;
+cursor:pointer;
 }
 
-.key:active{
-background:#ddd;
-}
+.key:active{background:#ddd}
 
 .key span{
 position:absolute;
-bottom:5px;
+bottom:6px;
 left:50%;
 transform:translateX(-50%);
-font-size:12px;
+font-size:11px;
 color:black;
 }
 
-/* DRUM PADS */
+.piano-controls{
+margin-top:10px;
+}
+
+/* drums */
 
 .pads{
 display:grid;
 grid-template-columns:repeat(4,1fr);
-gap:12px;
+gap:10px;
 margin-top:10px;
 }
 
 .pad{
 background:var(--accent);
-padding:18px;
-border-radius:10px;
+padding:16px;
 text-align:center;
+border-radius:10px;
 font-weight:bold;
 cursor:pointer;
 }
 
-.pad:active{transform:scale(.95);} 
+.pad:active{transform:scale(.95)}
 
-/* BUTTONS */
+/* controls */
 
 button,select{
-padding:10px 16px;
+padding:10px 15px;
 border:none;
 border-radius:8px;
 background:var(--accent);
 font-weight:bold;
 cursor:pointer;
-margin-top:5px;
+margin:4px;
 }
 
 textarea{
 width:100%;
+margin-top:10px;
 border-radius:10px;
 border:none;
 padding:10px;
-margin-top:10px;
 }
 
-.status{margin-top:10px;font-size:14px;opacity:.8}
+.status{margin-top:8px;font-size:14px;opacity:.8}
+
+.player{
+margin-top:12px;
+}
+
+audio{
+width:100%;
+margin-top:6px;
+}
 
 footer{
 text-align:center;
-padding:30px;
+padding:25px;
 opacity:.7;
-}
-
-.update{
-font-size:14px;
-opacity:.85;
-line-height:1.6;
-}
-
-.surprise{
-margin-top:15px;
-font-weight:bold;
-color:#ffd700;
 }
 
 </style>
@@ -152,115 +152,75 @@ color:#ffd700;
 <body>
 
 <header>🎵 ORLEN music base</header>
-<div class="subtitle">Studio musical web • Piano • Batterie • Robot vocal</div>
+<div class="subtitle">Studio musical web avancé</div>
 
 <div class="studio">
 
-<!-- INSTRUMENT -->
+<!-- instrument -->
 <div class="panel">
-<h2>🎹 Instrument</h2>
+<h2>🎹 Piano</h2>
 
 <select id="instrumentSelect">
 <option value="piano">Piano</option>
-<option value="guitar">Guitare</option>
 <option value="synth">Synthé</option>
+<option value="organ">Organ</option>
 </select>
 
-<div class="piano" id="piano">
-<div class="key" data-note="261.63"><span>A</span></div>
-<div class="key" data-note="293.66"><span>S</span></div>
-<div class="key" data-note="329.63"><span>D</span></div>
-<div class="key" data-note="349.23"><span>F</span></div>
-<div class="key" data-note="392"><span>G</span></div>
-<div class="key" data-note="440"><span>H</span></div>
-<div class="key" data-note="493.88"><span>J</span></div>
-<div class="key" data-note="523"><span>K</span></div>
+<div class="piano-controls">
+<button onclick="togglePiano()">Rétracter / Agrandir piano</button>
 </div>
 
-<p>Jouer avec la souris ou le clavier : A S D F G H J K</p>
+<div class="piano-wrapper" id="pianoWrap">
+<div class="piano" id="piano"></div>
+</div>
+
+<p>Clavier PC : A S D F G H J K L ; Q W E R T Y</p>
 
 </div>
 
-<!-- DRUMS -->
+<!-- drums -->
 <div class="panel">
-<h2>🥁 Batterie</h2>
+<h2>🥁 Batterie réaliste</h2>
 
 <div class="pads">
-<div class="pad" data-drum="kick">Kick</div>
-<div class="pad" data-drum="kick2">Kick 2</div>
-<div class="pad" data-drum="snare">Snare</div>
-<div class="pad" data-drum="hihat">HiHat</div>
-<div class="pad" data-drum="clap">Clap</div>
-<div class="pad" data-drum="snare2">Snare 2</div>
-<div class="pad" data-drum="hihat2">HiHat 2</div>
-<div class="pad" data-drum="fx">FX</div>
+<div class="pad" data-sample="kick">Kick</div>
+<div class="pad" data-sample="snare">Snare</div>
+<div class="pad" data-sample="hihat">HiHat</div>
+<div class="pad" data-sample="clap">Clap</div>
+<div class="pad" data-sample="tom">Tom</div>
+<div class="pad" data-sample="rim">Rim</div>
+<div class="pad" data-sample="perc">Perc</div>
+<div class="pad" data-sample="fx">FX</div>
 </div>
 
 </div>
 
-<!-- ROBOT VOICE -->
+<!-- recorder -->
 <div class="panel">
-<h2>🤖 Robot vocal</h2>
-
-<select id="voiceSelect"></select>
-
-<textarea id="robotText" placeholder="Écris un texte que le robot va lire..."></textarea>
-
-<button onclick="speakText()">Lire le texte</button>
-
-<button onclick="startMicRecord()">Enregistrer voix micro</button>
-<button onclick="stopMicRecord()">Stop micro</button>
-
-<a id="micDownload"></a>
-
-</div>
-
-<!-- RECORDER -->
-<div class="panel">
-<h2>🎙 Enregistrement musique</h2>
+<h2>🎙 Enregistrement</h2>
 
 <button onclick="startRecording()">Start</button>
 <button onclick="stopRecording()">Stop</button>
 
 <div class="status" id="recStatus">Statut : prêt</div>
 
-<a id="downloadLink"></a>
+<div class="player" id="playerArea"></div>
 
 </div>
 
-<!-- IDEAS -->
+<!-- robot -->
 <div class="panel">
-<h2>🎼 Idées de musiques</h2>
+<h2>🤖 Robot vocal</h2>
 
-<ul>
-<li>LoFi chill</li>
-<li>Trap beat</li>
-<li>Ambient space</li>
-<li>Retro synthwave</li>
-</ul>
-
-</div>
-
-<!-- UPDATES -->
-<div class="panel">
-<h2>📜 Notes de mise à jour</h2>
-
-<div class="update">
-Version 1.0
-<br>• piano jouable
-<br>• batterie
-<br>• robot vocal
-<br>• enregistrement audio
-<br>• clavier PC supporté
-</div>
-
-<div class="surprise">✨ Surprise : essaye d'appuyer très vite sur toutes les touches du piano !</div>
+<select id="voiceSelect"></select>
+<textarea id="robotText" placeholder="texte à lire..."></textarea>
+<button onclick="speakText()">Lire</button>
 
 </div>
 
 </div>
 
-<footer>ORLEN music base • studio musical navigateur</footer>
+<footer>ORLEN music base</footer>
 
 <script>
 
@@ -268,125 +228,136 @@ const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 const mediaDest=audioCtx.createMediaStreamDestination();
 const recorder=new MediaRecorder(mediaDest.stream);
 
-let instrument="piano";
 let chunks=[];
+let instrument="piano";
 
 const statusText=document.getElementById("recStatus");
 
-/* instrument */
+/* piano generation */
+
+const notes=[
+261.63,277,293.66,311,329.63,349.23,369,392,415,440,466,493.88,
+523,554,587,622,659
+];
+
+const piano=document.getElementById("piano");
+
+notes.forEach((n,i)=>{
+
+let k=document.createElement("div");
+k.className="key";
+k.dataset.note=n;
+
+let label=document.createElement("span");
+label.innerText=i+1;
+k.appendChild(label);
+
+piano.appendChild(k);
+
+});
+
+/* toggle piano */
+
+let open=true;
+function togglePiano(){
+
+let wrap=document.getElementById("pianoWrap");
+
+if(open){
+wrap.style.height="60px";
+open=false;
+}else{
+wrap.style.height="180px";
+open=true;
+}
+
+}
+
+/* instrument change */
 
 document.getElementById("instrumentSelect").onchange=e=>instrument=e.target.value;
 
-/* connect */
-
-function connect(node){
-node.connect(audioCtx.destination);
-node.connect(mediaDest);
-}
-
-/* instruments */
+/* sound generator */
 
 function play(freq){
 
 let osc=audioCtx.createOscillator();
 let gain=audioCtx.createGain();
 
-if(instrument==="piano") osc.type="sine";
-if(instrument==="synth") osc.type="sawtooth";
-if(instrument==="guitar") osc.type="triangle";
+if(instrument==="piano")osc.type="sine";
+if(instrument==="synth")osc.type="sawtooth";
+if(instrument==="organ")osc.type="square";
 
 osc.frequency.value=freq;
 
 gain.gain.value=.35;
 
 osc.connect(gain);
-connect(gain);
+gain.connect(audioCtx.destination);
+gain.connect(mediaDest);
 
 osc.start();
 osc.stop(audioCtx.currentTime+.7);
 
 }
 
-/* piano mouse */
+/* mouse piano */
 
-document.querySelectorAll(".key").forEach(k=>{
-
-k.onclick=()=>play(parseFloat(k.dataset.note));
-
+document.addEventListener("click",e=>{
+if(e.target.classList.contains("key")){
+play(parseFloat(e.target.dataset.note));
+}
 });
 
-/* keyboard play */
+/* keyboard map */
 
-const keyMap={
-a:261.63,
-s:293.66,
-d:329.63,
-f:349.23,
-g:392,
-h:440,
-j:493.88,
-k:523
-};
+const keys="asdfghjkl;qwerty";
 
-document.addEventListener("keydown",e=>{
+window.addEventListener("keydown",e=>{
 
-let note=keyMap[e.key];
-if(note) play(note);
+let i=keys.indexOf(e.key);
 
-});
-
-/* drums */
-
-function noise(d,f){
-
-let size=audioCtx.sampleRate*d;
-let buffer=audioCtx.createBuffer(1,size,audioCtx.sampleRate);
-let data=buffer.getChannelData(0);
-
-for(let i=0;i<size;i++) data[i]=Math.random()*2-1;
-
-let src=audioCtx.createBufferSource();
-src.buffer=buffer;
-
-let filter=audioCtx.createBiquadFilter();
-filter.frequency.value=f;
-
-src.connect(filter);
-connect(filter);
-
-src.start();
-
+if(i>-1 && notes[i]){
+play(notes[i]);
 }
 
-function kick(){noise(.3,120)}
-function kick2(){noise(.3,80)}
-function snare(){noise(.2,1200)}
-function snare2(){noise(.2,800)}
-function hihat(){noise(.05,9000)}
-function hihat2(){noise(.08,7000)}
-function clap(){noise(.15,3000)}
+});
+
+/* realistic drum samples */
+
+const samples={
+kick:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/kick.wav"),
+snare:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/snare.wav"),
+hihat:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/hihat.wav"),
+clap:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/clap.wav"),
+tom:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/tom.wav"),
+rim:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/rim.wav"),
+perc:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/perc.wav"),
+fx:new Audio("https://cdn.jsdelivr.net/gh/jakesgordon/javascript-drum-machine/sounds/cowbell.wav")
+};
+
+Object.values(samples).forEach(a=>{
+let src=audioCtx.createMediaElementSource(a);
+src.connect(audioCtx.destination);
+src.connect(mediaDest);
+});
 
 
 document.querySelectorAll(".pad").forEach(p=>{
 
 p.onclick=()=>{
 
-let d=p.dataset.drum;
+let s=samples[p.dataset.sample];
+if(!s)return;
 
-if(d==="kick")kick();
-if(d==="kick2")kick2();
-if(d==="snare")snare();
-if(d==="snare2")snare2();
-if(d==="hihat")hihat();
-if(d==="hihat2")hihat2();
-if(d==="clap")clap();
-if(d==="fx")noise(.5,500);
+s.currentTime=0;
+s.play();
 
 }
 
 });
 
-/* music recorder */
+/* recording */
 
 recorder.ondataavailable=e=>chunks.push(e.data);
 
@@ -395,13 +366,19 @@ recorder.onstop=()=>{
 let blob=new Blob(chunks,{type:'audio/webm'});
 let url=URL.createObjectURL(blob);
 
-let link=document.getElementById("downloadLink");
-link.href=url;
-link.download="orlen-music.mp3";
-link.innerText="Télécharger musique";
+let player=document.getElementById("playerArea");
+
+player.innerHTML=`
+<audio controls id="recordedAudio" src="${url}"></audio>
+<br>
+<button onclick="toggleLoop()">Activer / désactiver boucle</button>
+<a href="${url}" download="orlen-recording.webm">
+<button>Télécharger</button>
+</a>
+`;
 
 chunks=[];
-statusText.innerText="Statut : terminé";
+statusText.innerText="Statut : enregistrement terminé";
 
 }
 
@@ -422,6 +399,15 @@ recorder.stop();
 
 }
 
+function toggleLoop(){
+
+let audio=document.getElementById("recordedAudio");
+if(!audio)return;
+
+audio.loop=!audio.loop;
+
+}
+
 /* robot voice */
 
 const voiceSelect=document.getElementById("voiceSelect");
@@ -433,12 +419,10 @@ let voices=speechSynthesis.getVoices();
 voiceSelect.innerHTML="";
 
 voices.forEach((v,i)=>{
-
-let opt=document.createElement("option");
-opt.value=i;
-opt.text=v.name;
-voiceSelect.appendChild(opt);
-
+let o=document.createElement("option");
+o.value=i;
+o.text=v.name;
+voiceSelect.appendChild(o);
 });
 
 }
@@ -449,54 +433,79 @@ loadVoices();
 function speakText(){
 
 let txt=document.getElementById("robotText").value;
-
-let utter=new SpeechSynthesisUtterance(txt);
+let u=new SpeechSynthesisUtterance(txt);
 
 let voices=speechSynthesis.getVoices();
-utter.voice=voices[voiceSelect.value];
+u.voice=voices[voiceSelect.value];
 
-speechSynthesis.speak(utter);
-
-}
-
-/* mic recording */
-
-let micRecorder;
-let micChunks=[];
-
-async function startMicRecord(){
-
-let stream=await navigator.mediaDevices.getUserMedia({audio:true});
-
-micRecorder=new MediaRecorder(stream);
-
-micRecorder.ondataavailable=e=>micChunks.push(e.data);
-
-micRecorder.onstop=()=>{
-
-let blob=new Blob(micChunks,{type:'audio/webm'});
-let url=URL.createObjectURL(blob);
-
-let link=document.getElementById("micDownload");
-link.href=url;
-link.download="voice.mp3";
-link.innerText="Télécharger voix";
-
-micChunks=[];
-
-}
-
-micRecorder.start();
-
-}
-
-function stopMicRecord(){
-
-if(micRecorder) micRecorder.stop();
+speechSynthesis.speak(u);
 
 }
 
 </script>
+
+
+
+<!-- POPUP UPDATE -->
+<style>
+#updatePopup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+font-family:Segoe UI,Arial;
+}
+
+#updateBox{
+background:linear-gradient(135deg,#1f2f38,#203a43,#2c5364);
+padding:40px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
+animation:pop .5s ease;
+max-width:420px;
+}
+
+#updateBox h1{
+margin-top:0;
+font-size:28px;
+}
+
+#updateBox p{
+opacity:.85;
+margin:10px 0 20px 0;
+}
+
+#updateBox button{
+padding:12px 22px;
+font-size:16px;
+border:none;
+border-radius:10px;
+background:#00e0ff;
+font-weight:bold;
+cursor:pointer;
+}
+
+@keyframes pop{
+0%{transform:scale(.7);opacity:0}
+100%{transform:scale(1);opacity:1}
+}
+</style>
+
+<div id="updatePopup">
+<div id="updateBox">
+<h1>🚀 Mise à jour énorme</h1>
+<p><strong>Version Darwin 5</strong></p>
+<p>Nouveau piano étendu, batterie améliorée, enregistrement avancé et robot vocal.</p>
+<button onclick="document.getElementById('updatePopup').style.display='none'">Entrer dans le studio</button>
+</div>
+</div>
 
 </body>
 </html>
